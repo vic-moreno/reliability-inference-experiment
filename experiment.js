@@ -289,12 +289,16 @@ const isCommonClass = (result) => result === "H" || result === "Y1" || result ==
         <h2>Consent</h2>
         <p>By answering the following questions, you are participating in a study being performed by
         cognitive scientists in the Stanford Department of Psychology. If you have questions about
-        this research, please contact us at <a href="mailto:${EXPERIMENT.contact_email}">${EXPERIMENT.contact_email}</a>.
-        You must be at least 18 years old to participate. Your participation in this research is
-        voluntary. You may decline to answer any or all of the following questions. You may decline
-        further participation, at any time, without adverse consequences. Your anonymity is assured;
-        the researchers who have requested your participation will not receive any personal
-        information about you.</p>
+        this research, please contact Michael C. Frank at
+        <a href="mailto:mcfrank@stanford.edu">mcfrank@stanford.edu</a>. If you are not satisfied with
+        how this study is being conducted, or if you have any concerns, complaints, or general
+        questions about the research or your rights as a participant, please contact the Stanford
+        Institutional Review Board (IRB) to speak to someone independent of the research team at
+        <a href="mailto:irbnonmed@stanford.edu">irbnonmed@stanford.edu</a>. Your participation in this
+        research is voluntary. You may decline to answer any or all of the following questions. You
+        may decline further participation, at any time, without adverse consequences. Your
+        confidentiality is assured; the researchers who have requested your participation will not
+        receive any personal information about you.</p>
       </div>`,
     choices: ["I agree to participate", "I do not agree"],
     data: { task: "consent" },
@@ -451,7 +455,8 @@ const isCommonClass = (result) => result === "H" || result === "Y1" || result ==
       studying how people combine information about how common different diseases are with the
       results of a test, and how they judge a test's accuracy when its results agree or disagree.
       Different participants saw different test results. If you have questions about this
-      research, contact <a href="mailto:${EXPERIMENT.contact_email}">${EXPERIMENT.contact_email}</a>.
+      research, contact <a href="mailto:${EXPERIMENT.contact_email}">${EXPERIMENT.contact_email}</a>
+      or Michael C. Frank at <a href="mailto:mcfrank@stanford.edu">mcfrank@stanford.edu</a>.
       Press the button to save your responses and finish.</p>`,
     choices: ["Finish"],
     data: { task: "debrief" },
