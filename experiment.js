@@ -31,9 +31,10 @@
 window.TEMPLATE_VERSION = "0.1.0";
 
 const EXPERIMENT = {
-  // Firestore path: experiments/<id>/participants/... Use a new id for each phase
-  // (e.g. "relinf-s2-pilot-a", "relinf-s2-pilot-b", "relinf-s2-final").
-  id: "relinf-s2-pilot-a",
+  // Firestore path: experiments/<id>/participants/... Use a new id for each run
+  // (e.g. "RelInf-Data-Pilot-A", "RelInf-Data-Pilot-B", "RelInf-Data-Full").
+  // This is the only place the id is set: the tests and analysis.Rmd read it from here.
+  id: "RelInf-Data-Pilot-A",
 
   // Trials per Firestore write. The study has about 15 trials, so saving every trial is cheap.
   chunk_size: 1,

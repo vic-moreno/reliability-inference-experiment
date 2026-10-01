@@ -10,11 +10,19 @@
 // If you change the timeline in experiment.js, update `runThroughExperiment` below so the
 // robot still knows which buttons to press. That is a feature: the test documents the flow.
 
+const fs = require("fs");
+const path = require("path");
 const { test, expect, devices } = require("@playwright/test");
 
 const EMULATOR = process.env.EMULATOR === "1" || !!process.env.FIRESTORE_EMULATOR_HOST;
 const PROJECT = "demo-relinf";
-const EXPERIMENT_ID = "relinf-s2-pilot-a";
+// Read the experiment id from experiment.js, so it only ever has to be changed there.
+const EXPERIMENT_ID = (() => {
+  const src = fs.readFileSync(path.join(__dirname, "..", "experiment.js"), "utf8");
+  const m = src.match(/const EXPERIMENT = \{[\s\S]*?\n\s*id:\s*"([^"]+)"/);
+  if (!m) throw new Error("Could not find EXPERIMENT.id in experiment.js");
+  return m[1];
+})();
 const FS = `http://localhost:8080/v1/projects/${PROJECT}/databases/(default)/documents`;
 
 const CELLS = [

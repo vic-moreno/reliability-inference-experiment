@@ -14,8 +14,8 @@ library(tidyverse)
 library(jsonlite)
 ```
 
-This notebook reads the CSVs written by `npm run export -- --experiment relinf-s2-pilot-a`.
-Set `experiment_id` below to match `EXPERIMENT.id` in `experiment.js`. It is a data check and
+This notebook reads the CSVs written by `npm run export`. The experiment id is read from
+`EXPERIMENT.id` in `experiment.js`, so there is nothing to change here between runs. It is a data check and
 descriptive summary; the confirmatory analyses live in the reliability-inference repo.
 
 ## Load data
@@ -24,7 +24,8 @@ descriptive summary; the confirmatory analyses live in the reliability-inference
 plugin's `response`) are JSON strings.
 
 ```{r load}
-experiment_id <- "relinf-s2-pilot-a"
+exp_src <- readLines(file.path("..", "experiment.js"))
+experiment_id <- sub('.*id:\\s*"([^"]+)".*', "\\1", grep('^\\s*id:\\s*"', exp_src, value = TRUE)[1])
 raw_dir <- file.path("..", "data", "raw", experiment_id)
 
 participants <- read_csv(file.path(raw_dir, "participants.csv"), show_col_types = FALSE)
