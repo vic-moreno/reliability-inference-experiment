@@ -198,8 +198,11 @@ test.describe("experiment", () => {
     const chunks = await fsGet(`experiments/${EXPERIMENT_ID}/participants/${uid}/trials?pageSize=500`);
     const docs = (chunks.body.documents || []).map((d) => decodeFields(d.fields));
     expect(docs.length).toBe(Math.ceil(p.n_trials / 5));
+    // Every trial jsPsych recorded is in exactly one chunk. (trial_index can skip a number: a
+    // conditional screen that does not run, like the comprehension feedback, still uses one.)
     const indices = docs.flatMap((d) => d.trials).map((t) => t.trial_index).sort((a, b) => a - b);
-    expect(indices).toEqual([...Array(p.n_trials).keys()]);
+    const expected = JSON.parse(p.full_data).map((t) => t.trial_index).sort((a, b) => a - b);
+    expect(indices).toEqual(expected);
   });
 
   test("declining consent ends the study without a thank-you-for-your-data message", async ({ page }) => {
