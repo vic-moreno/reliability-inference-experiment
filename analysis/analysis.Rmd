@@ -1,0 +1,117 @@
+---
+title: "Analysis: Reliability Inference, Study 2"
+author: "Victor Moreno"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = TRUE, warning = FALSE)
+library(tidyverse)
+library(jsonlite)
+```
+
+This notebook reads the CSVs written by `npm run export -- --experiment relinf-s2-pilot-a`.
+Set `experiment_id` below to match `EXPERIMENT.id` in `experiment.js`. It is a data check and
+descriptive summary; the confirmatory analyses live in the reliability-inference repo.
+
+## Load data
+
+`trials.csv` is long format: one row per jsPsych trial. Columns that hold objects (the survey
+plugin's `response`) are JSON strings.
+
+```{r load}
+experiment_id <- "relinf-s2-pilot-a"
+raw_dir <- file.path("..", "data", "raw", experiment_id)
+
+participants <- read_csv(file.path(raw_dir, "participants.csv"), show_col_types = FALSE)
+trials <- read_csv(file.path(raw_dir, "trials.csv"), show_col_types = FALSE)
+errors <- read_csv(file.path(raw_dir, "errors.csv"), show_col_types = FALSE)
+```
+
+## Completion and assignment
+
+No exclusion rule is coded yet. Only completed sessions are kept; add any preregistered rule here.
+
+```{r completion}
+complete <- participants |> filter(completed)
+message("Participants: ", nrow(participants), " started / ", nrow(complete), " completed.")
+
+# Assignment balance: sessions per cell, and the counterbalancing factors.
+assign <- trials |>
+  filter(participant_id %in% complete$participant_id) |>
+  distinct(participant_id, cell, chart_version, question_class, screen_order,
+           result_order, fc_option_order, comprehension_disease)
+assign |> count(cell)
+assign |> count(chart_version, question_class)
+
+# Comprehension check attempts (repeats until correct).
+trials |>
+  filter(task == "comprehension", participant_id %in% complete$participant_id) |>
+  group_by(participant_id) |>
+  summarise(attempts = n(), .groups = "drop") |>
+  count(attempts)
+```
+
+## Responses by cell
+
+`belief_common` is the belief response reverse-coded to the more common disease class (0-100).
+`reliability` is the judged probability that the test identifies the disease (0-100).
+
+```{r responses}
+resp <- trials |>
+  filter(participant_id %in% complete$participant_id,
+         task %in% c("belief_initial", "belief_final", "reliability")) |>
+  mutate(value = if_else(task == "reliability", as.numeric(response), as.numeric(belief_common))) |>
+  select(participant_id, cell, task, value) |>
+  pivot_wider(names_from = task, values_from = value) |>
+  mutate(belief_change = belief_final - belief_initial)
+
+resp |>
+  group_by(cell) |>
+  summarise(n = n(),
+            initial = mean(belief_initial), final = mean(belief_final),
+            change = mean(belief_change), reliability = mean(reliability),
+            .groups = "drop")
+
+if (nrow(resp) > 0) {
+  resp |>
+    pivot_longer(c(belief_initial, belief_final), names_to = "phase", values_to = "belief") |>
+    mutate(phase = factor(phase, c("belief_initial", "belief_final"), c("Initial", "Final"))) |>
+    ggplot(aes(phase, belief, group = participant_id)) +
+    geom_line(alpha = 0.2) +
+    stat_summary(aes(group = 1), fun = mean, geom = "line", linewidth = 1.2, colour = "#3E7C91") +
+    facet_wrap(~ cell) +
+    labs(x = NULL, y = "Belief in more common class (%)") +
+    theme_minimal()
+}
+```
+
+## Forced choice (Conflict cells)
+
+```{r forced-choice}
+trials |>
+  filter(task == "forced_choice", participant_id %in% complete$participant_id) |>
+  mutate(chose_common_class = as.logical(chose_common_class)) |>
+  group_by(cell) |>
+  summarise(n = n(), prop_chose_common_class = mean(chose_common_class), .groups = "drop")
+```
+
+## Data quality
+
+```{r errors}
+if (nrow(errors) > 0) {
+  errors |> select(any_of(c("at", "uid", "trial_index", "message"))) |> head(20)
+} else {
+  message("No client-side errors were reported.")
+}
+```
+
+## Session info
+
+```{r session}
+sessionInfo()
+```
